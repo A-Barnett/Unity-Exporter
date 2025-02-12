@@ -51,6 +51,7 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\NavMeshExporter.cs" />
+     <Compile Include="Assets\LevelExporter.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Alex/Documents/Unity-Exporter/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>
