@@ -28,6 +28,8 @@ public class LevelExporter : MonoBehaviour
         }
     }
 
+    public string OutputFileName = "level_1.json";
+
     void Start()
     {
         List<ObjectData> objects = new List<ObjectData>();
@@ -116,16 +118,7 @@ public class LevelExporter : MonoBehaviour
             Directory.CreateDirectory(folderPath);
         }
 
-        string baseFilePath = Path.Combine(folderPath, "level.json");
-        string filePath = baseFilePath;
-        int fileIndex = 1;
-        
-        // Check if file already exists, if so, append a number to the filename
-        while (File.Exists(filePath))
-        {
-            filePath = Path.Combine(folderPath, $"level_{fileIndex}.json");
-            fileIndex++;
-        }
+        string filePath = Path.Combine(folderPath, OutputFileName);
 
         using (StreamWriter writer = new StreamWriter(filePath))
         {
