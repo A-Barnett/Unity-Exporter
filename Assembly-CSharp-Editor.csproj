@@ -51,6 +51,7 @@
   </PropertyGroup>
   <ItemGroup>
      <Compile Include="Assets\Editor\ColliderCombinerEditor.cs" />
+     <Compile Include="Assets\Editor\UnpackCubeEditor.cs" />
  <Reference Include="UnityEditor.TestRunner">
  <HintPath>C:/Users/Alex/Documents/Unity-Exporter/Library/ScriptAssemblies/UnityEditor.TestRunner.dll</HintPath>
  </Reference>
