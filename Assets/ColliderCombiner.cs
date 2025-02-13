@@ -140,8 +140,9 @@ public class ColliderCombiner : MonoBehaviour
         Transform attachTo = group[group.Count / 2].Item2;
         Quaternion worldRotation = attachTo.rotation;
 
-        // Convert world-space size into local space of the attaching object
-        Vector3 combinedSizeLocal = attachTo.InverseTransformDirection(combinedSizeWorld);
+        // Convert world-space size to local space safely
+        Vector3 combinedSizeLocal = attachTo.InverseTransformVector(combinedSizeWorld);
+        combinedSizeLocal = new Vector3(Mathf.Abs(combinedSizeLocal.x), Mathf.Abs(combinedSizeLocal.y), Mathf.Abs(combinedSizeLocal.z));
 
         foreach (var (box, _) in group)
         {
@@ -155,6 +156,7 @@ public class ColliderCombiner : MonoBehaviour
 
         Debug.Log($"Merged {group.Count} colliders into one at {combinedCenter} with size {combinedSizeLocal} and rotation {worldRotation.eulerAngles}");
     }
+
 
 
     public void RunCombiner()
