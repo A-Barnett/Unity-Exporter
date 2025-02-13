@@ -9,7 +9,7 @@ public class LevelExporter : MonoBehaviour
     {
         // Object transform
         public Vector3 position;
-        public Vector3 rotation; // Store rotation as Euler angles
+        public Quaternion rotation;
         public Vector3 scale;
 
         // Collider transform
@@ -64,9 +64,9 @@ public class LevelExporter : MonoBehaviour
                 ObjectData objectData = new ObjectData
                 {
                     position = node.position,
-                    rotation = node.eulerAngles, // Convert rotation to Euler angles
+                    rotation = node.rotation,
                     scale = node.localScale,
-                    meshName = meshFilter.sharedMesh != null ? meshFilter.sharedMesh.name : "No Mesh"
+                    meshName = meshFilter.sharedMesh?.name,
                 };
 
                 // Get collider info if available
