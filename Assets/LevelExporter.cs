@@ -4,13 +4,14 @@ using System.IO;
 
 public class LevelExporter : MonoBehaviour
 {
+    // NOTE: Null strings will be serialised as empty strings
     class ObjectData
     {
         // Object transform
         public Vector3 position;
-        public Vector3 rotation; // Store rotation as Euler angles
+        public Quaternion rotation;
         public Vector3 scale;
-    
+
         // Collider transform
         public Vector3 colliderPosition;
         public Vector3 colliderScale;
@@ -19,7 +20,7 @@ public class LevelExporter : MonoBehaviour
         public string meshName;
         public string mainTextureName;
         public string normalTextureName;
-        
+
         public override string ToString()
         {
             return $"Mesh: {meshName}, Texture: {mainTextureName}, Normal Texture: {normalTextureName}\n" +
@@ -28,11 +29,13 @@ public class LevelExporter : MonoBehaviour
         }
     }
 
+    public string OutputFileName = "level_1.json";
+
     void Start()
     {
         List<ObjectData> objects = new List<ObjectData>();
         FindLeafNodes(transform, objects);
-        
+
         Debug.Log("Total leaf nodes found: " + objects.Count);
         int count = 0;
         foreach (var obj in objects)
@@ -61,9 +64,9 @@ public class LevelExporter : MonoBehaviour
                 ObjectData objectData = new ObjectData
                 {
                     position = node.position,
-                    rotation = node.eulerAngles, // Convert rotation to Euler angles
+                    rotation = node.rotation,
                     scale = node.localScale,
-                    meshName = meshFilter.sharedMesh != null ? meshFilter.sharedMesh.name : "No Mesh"
+                    meshName = meshFilter.sharedMesh?.name,
                 };
 
                 // Get collider info if available
@@ -76,32 +79,9 @@ public class LevelExporter : MonoBehaviour
 
                 // Get texture info if available
                 MeshRenderer meshRenderer = node.GetComponent<MeshRenderer>();
-                if (meshRenderer != null && meshRenderer.material != null)
-                {
-                    if (meshRenderer.material.mainTexture != null)
-                    {
-                        objectData.mainTextureName = meshRenderer.material.mainTexture.name;
-                    }
-                    else
-                    {
-                        objectData.mainTextureName = "No Texture";
-                    }
 
-                    if (meshRenderer.material.HasProperty("_BumpMap"))
-                    {
-                        Texture normalTexture = meshRenderer.material.GetTexture("_BumpMap");
-                        objectData.normalTextureName = normalTexture != null ? normalTexture.name : "No Normal Texture";
-                    }
-                    else
-                    {
-                        objectData.normalTextureName = "No Normal Texture";
-                    }
-                }
-                else
-                {
-                    objectData.mainTextureName = "No Texture";
-                    objectData.normalTextureName = "No Normal Texture";
-                }
+                objectData.mainTextureName = meshRenderer?.material?.mainTexture?.name;
+                objectData.normalTextureName = meshRenderer?.material?.GetTexture("_BumpMap")?.name;
 
                 objects.Add(objectData);
             }
@@ -116,16 +96,7 @@ public class LevelExporter : MonoBehaviour
             Directory.CreateDirectory(folderPath);
         }
 
-        string baseFilePath = Path.Combine(folderPath, "level.json");
-        string filePath = baseFilePath;
-        int fileIndex = 1;
-        
-        // Check if file already exists, if so, append a number to the filename
-        while (File.Exists(filePath))
-        {
-            filePath = Path.Combine(folderPath, $"level_{fileIndex}.json");
-            fileIndex++;
-        }
+        string filePath = Path.Combine(folderPath, OutputFileName);
 
         using (StreamWriter writer = new StreamWriter(filePath))
         {
