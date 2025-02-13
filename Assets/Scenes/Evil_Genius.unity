@@ -46868,6 +46868,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
+  lerpTime: 0
 --- !u!1 &823841600
 GameObject:
   m_ObjectHideFlags: 0
@@ -77224,6 +77225,7 @@ MonoBehaviour:
   - {fileID: 619736250}
   - {fileID: 1900744561}
   - {fileID: 1987373227}
+  lerpTime: 2
 --- !u!4 &1340990074
 Transform:
   m_ObjectHideFlags: 0

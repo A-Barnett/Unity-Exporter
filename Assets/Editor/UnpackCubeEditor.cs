@@ -9,14 +9,9 @@ public class UnpackCubeEditor : Editor
         DrawDefaultInspector(); // Draw default script properties
 
         UnpackCube script = (UnpackCube)target;
-        if (GUILayout.Button("\nUnpack Cube\n"))
+        if (GUILayout.Button("\n\nPack/Unpack Cube Map\n\n"))
         {
-            script.unpack();
-        }
-        
-        if (GUILayout.Button("\nPack Cube\n"))
-        {
-            script.pack();
+            script.togglePack();
         }
         
     }
