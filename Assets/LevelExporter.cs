@@ -28,21 +28,20 @@ public class LevelExporter : MonoBehaviour
                    $" Collider Position: {colliderPosition}, Collider Scale: {colliderScale}";
         }
     }
+    public UnpackCube packer;
 
     public string OutputFileName = "level_1.json";
 
-    void Start()
+    public bool customPath;
+    public string SavePath = "Path/to/TeamProject/Assets/Levels";
+
+    public void Start()
     {
+        packer.quickPack();
         List<ObjectData> objects = new List<ObjectData>();
         FindLeafNodes(transform, objects);
 
         Debug.Log("Total leaf nodes found: " + objects.Count);
-        int count = 0;
-        foreach (var obj in objects)
-        {
-            Debug.Log("Object: " + count + " " + obj.ToString());
-            count++;
-        }
 
         SaveToJson(objects);
     }
@@ -65,7 +64,7 @@ public class LevelExporter : MonoBehaviour
                 {
                     position = node.position,
                     rotation = node.rotation,
-                    scale = node.localScale,
+                    scale = node.lossyScale,
                     meshName = meshFilter.sharedMesh?.name,
                 };
 
@@ -90,7 +89,16 @@ public class LevelExporter : MonoBehaviour
 
     void SaveToJson(List<ObjectData> objects)
     {
-        string folderPath = Path.Combine(Application.dataPath, "LevelData");
+        string folderPath = "";
+        if (customPath)
+        {
+            folderPath = SavePath;
+        }
+        else
+        {
+            folderPath = Path.Combine(Application.dataPath, "LevelData");
+        }
+    
         if (!Directory.Exists(folderPath))
         {
             Directory.CreateDirectory(folderPath);

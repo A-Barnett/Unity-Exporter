@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
@@ -15,7 +16,17 @@ public class UnpackCube : MonoBehaviour
     private bool isPacking = false;
     private float elapsedTime = 0f;
     private bool packed;
-
+    private bool exported = false;
+    public void quickPack()
+    {
+        int finalCount = 0;
+        foreach (GameObject obj in cubeSectionsObj)
+        {
+            obj.transform.position = cubeSectionsTransform[finalCount].position;
+            obj.transform.rotation = cubeSectionsTransform[finalCount].rotation;
+            finalCount++;
+        }
+    }
     private void OnEnable()
     {
         EditorApplication.update += EditorUpdate;
@@ -24,20 +35,6 @@ public class UnpackCube : MonoBehaviour
     private void OnDisable()
     {
         EditorApplication.update -= EditorUpdate;
-    }
-
-    public void togglePack()
-    {
-        if (elapsedTime > 0) return;
-        if (packed)
-        {
-            unpack();
-        }
-        else
-        {
-            pack();
-        }
-        packed = !packed;
     }
 
     public void unpack()
