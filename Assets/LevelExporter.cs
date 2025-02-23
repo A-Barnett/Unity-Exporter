@@ -21,6 +21,7 @@ public class LevelExporter : MonoBehaviour
         public string mainTextureName;
         public string normalTextureName;
 
+        public char type;
         public override string ToString()
         {
             return $"Mesh: {meshName}, Texture: {mainTextureName}, Normal Texture: {normalTextureName}\n" +
@@ -36,6 +37,17 @@ public class LevelExporter : MonoBehaviour
     public string SavePath = "Path/to/TeamProject/Assets/Levels";
 
     public void Start()
+    {
+        packer.quickPack();
+        List<ObjectData> objects = new List<ObjectData>();
+        FindLeafNodes(transform, objects);
+
+        Debug.Log("Total leaf nodes found: " + objects.Count);
+
+        SaveToJson(objects);
+    }
+
+    public void SaveLevel()
     {
         packer.quickPack();
         List<ObjectData> objects = new List<ObjectData>();
@@ -67,7 +79,10 @@ public class LevelExporter : MonoBehaviour
                     scale = node.lossyScale,
                     meshName = meshFilter.sharedMesh?.name,
                 };
-
+                // Ensure the node has a GameObject component
+                GameObject nodeGameObject = node.gameObject;
+                ObjectAttributes objectAttributes = nodeGameObject.GetComponent<ObjectAttributes>();
+                objectData.type = objectAttributes.getType();
                 // Get collider info if available
                 BoxCollider box = node.GetComponent<BoxCollider>();
                 if (box != null)
@@ -117,4 +132,5 @@ public class LevelExporter : MonoBehaviour
 
         Debug.Log("Data saved to " + filePath);
     }
+    
 }
