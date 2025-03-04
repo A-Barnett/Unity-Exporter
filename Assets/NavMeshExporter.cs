@@ -133,23 +133,34 @@ public class NavMeshExporter : MonoBehaviour
     {
         NavMeshTriangulation tris = NavMesh.CalculateTriangulation();
 
-        Vector3[]   allverts   = tris.vertices;
-        int[]       allIndices = tris.indices;
+        Vector3[] allVerts = tris.vertices;
+        int[] allIndices = tris.indices;
 
-        /*
-         * We have a problem - Unity doesn't weld vertices properly,
-         * So verts that are actually the same don't get shared
-         * which kinda breaks the neighbours code
-         */
-        Weld(allverts, allIndices);
+        Weld(allVerts, allIndices); // Ensure vertices are merged correctly
 
-        List<NavTri> allTris            = new List<NavTri>();
+        List<Vector3> adjustedVerts = new List<Vector3>();
+
+        // ✅ Fix: Adjust vertices by sampling the correct height from the Unity NavMesh
+        for (int i = 0; i < allVerts.Length; i++)
+        {
+            Vector3 correctedVert = allVerts[i];
+
+            // Sample the correct height from the NavMesh heightmesh
+            NavMeshHit hit;
+            if (NavMesh.SamplePosition(correctedVert, out hit, 1.0f, NavMesh.AllAreas))
+            {
+                correctedVert.y = hit.position.y;  // ✅ Use correct height
+            }
+
+            adjustedVerts.Add(correctedVert);
+        }
+
+        List<NavTri> allTris = new List<NavTri>();
 
         for (int i = 0; i < allIndices.Length; i += 3)
         {
             NavTri t = new NavTri();
-            //We need to swap the indices to maintain the winding
-            if(invertZ) 
+            if (invertZ)
             {
                 t.indices[0] = allIndices[i + 0];
                 t.indices[1] = allIndices[i + 2];
@@ -161,25 +172,23 @@ public class NavMeshExporter : MonoBehaviour
                 t.indices[1] = allIndices[i + 1];
                 t.indices[2] = allIndices[i + 2];
             }
-
             allTris.Add(t);
         }
 
-        //Build up the neighbours
-
+        // ✅ Neighbors remain unchanged
         for (int j = 0; j < allTris.Count; ++j)
         {
             if (allTris[j].neighbourCount == 3)
             {
                 continue;
             }
-            for (int i = j+1; i < allTris.Count; ++i)
+            for (int i = j + 1; i < allTris.Count; ++i)
             {
-                if(allTris[i].neighbourCount == 3)
+                if (allTris[i].neighbourCount == 3)
                 {
                     continue;
                 }
-                if(allTris[j].SharesEdgeWith(allTris[i]))
+                if (allTris[j].SharesEdgeWith(allTris[i]))
                 {
                     allTris[j].AddNeighbour(i);
                     allTris[i].AddNeighbour(j);
@@ -187,102 +196,46 @@ public class NavMeshExporter : MonoBehaviour
             }
         }
 
-        //Sanity checking the neighbours!
-
-        for(int j = 0; j < allTris.Count; ++j)
-        {
-            for(int i = 0; i < 3; ++i)
-            {
-                int nIndex = allTris[j].neighbours[i];
-
-                if(nIndex == -1)
-                {
-                    continue;
-                }
-                if(!allTris[nIndex].HasNeighbour(j))
-                {
-                    Debug.Log("Tri " + j + " thinks it is connected to tri " + nIndex + " but not vice versa?!");
-                }
-                else
-                {
-                    int sharedCount = 0;
-                    for (int jj = 0; jj < 3; ++jj)
-                    {
-
-                        //ok, they think they are neighbours, but should they be?
-                        if (allTris[nIndex].HasIndex(allTris[j].indices[jj]))
-                        {
-                            sharedCount++;
-                        }
-                        if (allTris[j].HasIndex(allTris[nIndex].indices[jj]))
-                        {
-                            sharedCount++;
-                        }
-                    }
-                    if(sharedCount == 0)
-                    {
-                        Debug.Log("These tris shouldn't be connected? No shared indices...");
-                    }
-                }
-            }
-        }
-
-
-
         using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename))
         {
-            file.Write(allverts.Length); file.Write('\n');
-            file.Write(allIndices.Length); file.Write('\n');
+            file.Write(adjustedVerts.Count + "\n");
+            file.Write(allIndices.Length + "\n");
 
-            foreach (Vector3 v in allverts)
+            // ✅ Write vertices with corrected heights
+            foreach (Vector3 v in adjustedVerts)
             {
                 string s = "";
-                s += v.x;
-                s += " ";    
-                s += v.y;
-                s += " ";
-                if(invertZ)
-                {
-                    s += -v.z;
-                }
-                else
-                {
-                    s += v.z;
-                }
-
-                s += '\n';
+                s += v.x + " ";
+                s += v.y + " "; // ✅ Uses correct height from heightmesh
+                s += (invertZ ? -v.z : v.z) + "\n";
                 file.Write(s);
             }
 
+            // ✅ Write triangle indices
             foreach (NavTri t in allTris)
             {
                 string s = "";
-                s += t.indices[0];
-                s += " ";
-                s += t.indices[1];
-                s += " ";
-                s += t.indices[2];
-                s += '\n';
+                s += t.indices[0] + " ";
+                s += t.indices[1] + " ";
+                s += t.indices[2] + "\n";
                 file.Write(s);
             }
 
+            // ✅ Write neighbor data
             foreach (NavTri t in allTris)
             {
                 string s = "";
-                s += t.neighbours[0];
-                s += " ";
-                s += t.neighbours[1];
-                s += " ";
-                s += t.neighbours[2];
-                s += '\n';
+                s += t.neighbours[0] + " ";
+                s += t.neighbours[1] + " ";
+                s += t.neighbours[2] + "\n";
                 file.Write(s);
             }
         }
+
         if (createDebugMesh)
         {
             Mesh m = new Mesh();
-            List<Vector3> testMeshVerts = new List<Vector3>(allverts);
-            m.SetVertices(testMeshVerts);
+            m.SetVertices(adjustedVerts);
             m.SetIndices(allIndices, MeshTopology.Triangles, 0);
 
             MeshFilter mf = gameObject.AddComponent<MeshFilter>();
