@@ -50,11 +50,11 @@
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
   </PropertyGroup>
   <ItemGroup>
+     <Compile Include="Assets\ObjectAttributes.cs" />
      <Compile Include="Assets\UnpackCube.cs" />
      <Compile Include="Assets\NavMeshExporter.cs" />
      <Compile Include="Assets\ColliderCombiner.cs" />
      <Compile Include="Assets\LevelExporter.cs" />
-     <Compile Include="Assets\ObjectAttributes.cs" />
  <Reference Include="Unity.Timeline.Editor">
  <HintPath>C:/Users/Alex/Documents/Unity-Exporter/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
  </Reference>

@@ -5,6 +5,7 @@ using System.IO;
 public class LevelExporter : MonoBehaviour
 {
     // NOTE: Null strings will be serialised as empty strings
+    
     class ObjectData
     {
         // Object transform
@@ -21,7 +22,7 @@ public class LevelExporter : MonoBehaviour
         public string mainTextureName;
         public string normalTextureName;
 
-        public char type;
+        public ObjectAttributes.ObjectType type;
         public override string ToString()
         {
             return $"Mesh: {meshName}, Texture: {mainTextureName}, Normal Texture: {normalTextureName}\n" +
@@ -82,7 +83,7 @@ public class LevelExporter : MonoBehaviour
                 // Ensure the node has a GameObject component
                 GameObject nodeGameObject = node.gameObject;
                 ObjectAttributes objectAttributes = nodeGameObject.GetComponent<ObjectAttributes>();
-                objectData.type = objectAttributes.getType();
+                objectData.type = objectAttributes.GetTypeEnum();
                 // Get collider info if available
                 BoxCollider box = node.GetComponent<BoxCollider>();
                 if (box != null)
@@ -90,7 +91,7 @@ public class LevelExporter : MonoBehaviour
                     objectData.colliderPosition = box.center;
                     objectData.colliderScale = box.size;
                 }
-
+                
                 // Get texture info if available
                 MeshRenderer meshRenderer = node.GetComponent<MeshRenderer>();
 
