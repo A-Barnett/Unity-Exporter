@@ -84,6 +84,7 @@ public class LevelExporter : MonoBehaviour
                 GameObject nodeGameObject = node.gameObject;
                 ObjectAttributes objectAttributes = nodeGameObject.GetComponent<ObjectAttributes>();
                 objectData.type = objectAttributes.GetTypeEnum();
+      
                 // Get collider info if available
                 BoxCollider box = node.GetComponent<BoxCollider>();
                 if (box != null)
@@ -94,7 +95,16 @@ public class LevelExporter : MonoBehaviour
                 
                 // Get texture info if available
                 MeshRenderer meshRenderer = node.GetComponent<MeshRenderer>();
-
+                if (objectData.type == ObjectAttributes.ObjectType.Ice)
+                { 
+                    meshRenderer.material.color = Color.cyan;;
+                }else if (objectData.type == ObjectAttributes.ObjectType.Slime)
+                {
+                    meshRenderer.material.color = Color.green;;
+                }else if (objectData.type == ObjectAttributes.ObjectType.JumpPad)
+                {
+                    meshRenderer.material.color = Color.magenta;;
+                }
                 objectData.mainTextureName = meshRenderer?.material?.mainTexture?.name;
                 objectData.normalTextureName = meshRenderer?.material?.GetTexture("_BumpMap")?.name;
 

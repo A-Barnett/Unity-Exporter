@@ -15,8 +15,10 @@ public class ObjectAttributes : MonoBehaviour
     {
         Default,
         JumpPad,
-        Slime,
-        Ice
+        Slime, 
+        Ice,
+        PointLight,
+        RespawnPoint
     }
     
     public ObjectType GetTypeEnum()
