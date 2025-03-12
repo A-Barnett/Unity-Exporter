@@ -2,28 +2,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using System.IO;
 
 public class NavMeshExporter : MonoBehaviour
 {
-    [SerializeField]
-    bool createDebugMesh = false;
-    [SerializeField]
-    string filename;
-    // Start is called before the first frame update
-
-    [SerializeField]
-    bool invertZ;
+    [SerializeField] private bool createDebugMesh = false;
+    [SerializeField] private string filename;
+    [SerializeField] private bool invertZ;
+    [SerializeField] private NavMeshSurface navMeshSurface;  // ✅ Reference to NavMeshSurface
 
     void Start()
     {
+        if (navMeshSurface == null)
+        {
+            Debug.LogError("NavMeshSurface is not assigned!");
+            return;
+        }
+
+        navMeshSurface.BuildNavMesh(); // ✅ Ensure NavMesh is up-to-date
         ExtractToFile(filename);
     }
 
     class NavTri
     {
-        public int[] indices    = new int[3];
+        public int[] indices = new int[3];
         public int[] neighbours = new int[3];
-
         public int neighbourCount = 0;
 
         public NavTri()
@@ -34,27 +37,20 @@ public class NavMeshExporter : MonoBehaviour
 
         public bool HasIndex(int index)
         {
-            for(int i = 0; i < 3; ++i)
+            for (int i = 0; i < 3; ++i)
             {
-                if(indices[i] == index)
-                {
-                    return true;
-                }
+                if (indices[i] == index) return true;
             }
             return false;
         }
 
         public bool SharesEdgeWith(NavTri t)
         {
-            for(int i = 0; i < 3; ++i)
+            for (int i = 0; i < 3; ++i)
             {
                 int a = indices[i];
                 int b = indices[(i + 1) % 3];
-
-                if (t.HasEdge(a, b))
-                {
-                    return true;
-                }
+                if (t.HasEdge(a, b)) return true;
             }
             return false;
         }
@@ -66,13 +62,9 @@ public class NavMeshExporter : MonoBehaviour
                 int a = indices[i];
                 int b = indices[(i + 1) % 3];
 
-                if(a == ea && b == eb)
+                if ((a == ea && b == eb) || (b == ea && a == eb))
                 {
-                    return true; //they'd be having the same winding?
-                }
-                if (b == ea && a == eb)
-                {
-                    return true; 
+                    return true;
                 }
             }
             return false;
@@ -80,72 +72,31 @@ public class NavMeshExporter : MonoBehaviour
 
         public void AddNeighbour(int newIndex)
         {
-            if(neighbourCount == 3)
+            if (neighbourCount == 3)
             {
-                Debug.Log("Tri has too many neighbours?");
+                Debug.LogWarning("Tri has too many neighbours?");
                 return;
             }
             neighbours[neighbourCount++] = newIndex;
         }
-
-        public bool HasNeighbour(int nIndex)
-        {
-            for (int i = 0; i < 3; ++i)
-            {
-                if(neighbours[i] == nIndex)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     };
-
-    void Weld(Vector3[] verts, int[] indices, float threshold = 0.0001f)
-    {
-        int weldCount = 0;
-
-        List<int> outIndices = new List<int>();
-
-        for (int i = 0; i < indices.Length; i++)
-        {
-            Vector3 iv = verts[indices[i]];
-            for (int j = i + 1; j < indices.Length; j++)
-            {
-                if(indices[j] == indices[i])
-                {
-                    continue;
-                }
-                Vector3 jv = verts[indices[j]];
-
-                if ((iv - jv).magnitude < threshold)
-                {
-                    indices[j] = indices[i];
-                    weldCount++;
-                    break;
-                }
-            }
-        }
-        Debug.Log("Welded " + weldCount + " vertices");
-    }
 
     void ExtractToFile(string filename)
     {
         NavMeshTriangulation tris = NavMesh.CalculateTriangulation();
-
         Vector3[] allVerts = tris.vertices;
         int[] allIndices = tris.indices;
 
-        Weld(allVerts, allIndices); // Ensure vertices are merged correctly
+        Weld(allVerts, allIndices);  // ✅ Ensures shared vertices are merged correctly
 
         List<Vector3> adjustedVerts = new List<Vector3>();
 
-        // ✅ Fix: Adjust vertices by sampling the correct height from the Unity NavMesh
+        // ✅ Fix: Adjust vertices by sampling the correct height from the Unity NavMeshSurface
         for (int i = 0; i < allVerts.Length; i++)
         {
             Vector3 correctedVert = allVerts[i];
 
-            // Sample the correct height from the NavMesh heightmesh
+            // Sample the correct height from the NavMesh
             NavMeshHit hit;
             if (NavMesh.SamplePosition(correctedVert, out hit, 1.0f, NavMesh.AllAreas))
             {
@@ -178,16 +129,11 @@ public class NavMeshExporter : MonoBehaviour
         // ✅ Neighbors remain unchanged
         for (int j = 0; j < allTris.Count; ++j)
         {
-            if (allTris[j].neighbourCount == 3)
-            {
-                continue;
-            }
+            if (allTris[j].neighbourCount == 3) continue;
+
             for (int i = j + 1; i < allTris.Count; ++i)
             {
-                if (allTris[i].neighbourCount == 3)
-                {
-                    continue;
-                }
+                if (allTris[i].neighbourCount == 3) continue;
                 if (allTris[j].SharesEdgeWith(allTris[i]))
                 {
                     allTris[j].AddNeighbour(i);
@@ -196,39 +142,30 @@ public class NavMeshExporter : MonoBehaviour
             }
         }
 
-        using (System.IO.StreamWriter file = new System.IO.StreamWriter(filename))
+        using (StreamWriter file = new StreamWriter(filename))
         {
-            file.Write(adjustedVerts.Count + "\n");
-            file.Write(allIndices.Length + "\n");
+            file.WriteLine(adjustedVerts.Count);
+            file.WriteLine(allIndices.Length);
 
             // ✅ Write vertices with corrected heights
             foreach (Vector3 v in adjustedVerts)
             {
-                string s = "";
-                s += v.x + " ";
-                s += v.y + " "; // ✅ Uses correct height from heightmesh
-                s += (invertZ ? -v.z : v.z) + "\n";
-                file.Write(s);
+                string s = $"{v.x} {v.y} {(invertZ ? -v.z : v.z)}";
+                file.WriteLine(s);
             }
 
             // ✅ Write triangle indices
             foreach (NavTri t in allTris)
             {
-                string s = "";
-                s += t.indices[0] + " ";
-                s += t.indices[1] + " ";
-                s += t.indices[2] + "\n";
-                file.Write(s);
+                string s = $"{t.indices[0]} {t.indices[1]} {t.indices[2]}";
+                file.WriteLine(s);
             }
 
             // ✅ Write neighbor data
             foreach (NavTri t in allTris)
             {
-                string s = "";
-                s += t.neighbours[0] + " ";
-                s += t.neighbours[1] + " ";
-                s += t.neighbours[2] + "\n";
-                file.Write(s);
+                string s = $"{t.neighbours[0]} {t.neighbours[1]} {t.neighbours[2]}";
+                file.WriteLine(s);
             }
         }
 
@@ -242,5 +179,27 @@ public class NavMeshExporter : MonoBehaviour
             mf.mesh = m;
             MeshRenderer mr = gameObject.AddComponent<MeshRenderer>();
         }
+    }
+
+    void Weld(Vector3[] verts, int[] indices, float threshold = 0.0001f)
+    {
+        int weldCount = 0;
+        for (int i = 0; i < indices.Length; i++)
+        {
+            Vector3 iv = verts[indices[i]];
+            for (int j = i + 1; j < indices.Length; j++)
+            {
+                if (indices[j] == indices[i]) continue;
+
+                Vector3 jv = verts[indices[j]];
+                if ((iv - jv).magnitude < threshold)
+                {
+                    indices[j] = indices[i];
+                    weldCount++;
+                    break;
+                }
+            }
+        }
+        Debug.Log($"Welded {weldCount} vertices");
     }
 }
