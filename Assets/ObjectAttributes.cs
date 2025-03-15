@@ -16,10 +16,14 @@ public class ObjectAttributes : MonoBehaviour
         Default,
         Floor,
         JumpPad,
-        Slime, 
+        Slime,
         Ice,
         PointLight,
-        RespawnPoint
+        RespawnPoint,
+        Player,
+        Centre,
+        SlimeCaste,
+        Courtyard
     }
     
     public ObjectType GetTypeEnum()

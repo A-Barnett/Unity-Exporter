@@ -42,6 +42,9 @@ public class LevelExporter : MonoBehaviour
     public Material jumpPadMaterial;
     public Material slimeMaterial;
     public Material iceMaterial;
+    public Material centreMaterial;
+    public Material slimeCastleMaterial;
+    public Material courtyardMaterial;
     private Dictionary<ObjectAttributes.ObjectType, Material> materialMap;
     public void Start()
     {
@@ -69,7 +72,10 @@ public class LevelExporter : MonoBehaviour
             { ObjectAttributes.ObjectType.Slime, slimeMaterial },
             { ObjectAttributes.ObjectType.Ice, iceMaterial },
             { ObjectAttributes.ObjectType.PointLight, defaultMaterial },
-            { ObjectAttributes.ObjectType.RespawnPoint, defaultMaterial }
+            { ObjectAttributes.ObjectType.RespawnPoint, defaultMaterial },
+            { ObjectAttributes.ObjectType.Centre, centreMaterial },
+            { ObjectAttributes.ObjectType.SlimeCaste, slimeCastleMaterial },
+            { ObjectAttributes.ObjectType.Courtyard, courtyardMaterial }
         };
         List<ObjectData> objects = new List<ObjectData>();
         UpdateMaterials(transform, objects);
