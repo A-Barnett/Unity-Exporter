@@ -36,16 +36,16 @@ public class LevelExporter : MonoBehaviour
 
     public bool customPath;
     public string SavePath = "Path/to/TeamProject/Assets/Levels";
-
+    
+    public Material defaultMaterial;
+    public Material floorMaterial;
+    public Material jumpPadMaterial;
+    public Material slimeMaterial;
+    public Material iceMaterial;
+    private Dictionary<ObjectAttributes.ObjectType, Material> materialMap;
     public void Start()
     {
-        packer.quickPack();
-        List<ObjectData> objects = new List<ObjectData>();
-        FindLeafNodes(transform, objects);
-
-        Debug.Log("Total leaf nodes found: " + objects.Count);
-
-        SaveToJson(objects);
+        SaveLevel();
     }
 
     public void SaveLevel()
@@ -57,6 +57,22 @@ public class LevelExporter : MonoBehaviour
         Debug.Log("Total leaf nodes found: " + objects.Count);
 
         SaveToJson(objects);
+    }
+
+    public void SetMaterials()
+    {
+        materialMap = new Dictionary<ObjectAttributes.ObjectType, Material>
+        {
+            { ObjectAttributes.ObjectType.Default, defaultMaterial },
+            { ObjectAttributes.ObjectType.Floor, floorMaterial },
+            { ObjectAttributes.ObjectType.JumpPad, jumpPadMaterial },
+            { ObjectAttributes.ObjectType.Slime, slimeMaterial },
+            { ObjectAttributes.ObjectType.Ice, iceMaterial },
+            { ObjectAttributes.ObjectType.PointLight, defaultMaterial },
+            { ObjectAttributes.ObjectType.RespawnPoint, defaultMaterial }
+        };
+        List<ObjectData> objects = new List<ObjectData>();
+        UpdateMaterials(transform, objects);
     }
 
     void FindLeafNodes(Transform node, List<ObjectData> objects)
@@ -95,20 +111,35 @@ public class LevelExporter : MonoBehaviour
                 
                 // Get texture info if available
                 MeshRenderer meshRenderer = node.GetComponent<MeshRenderer>();
-                if (objectData.type == ObjectAttributes.ObjectType.Ice)
-                { 
-                    meshRenderer.material.color = Color.cyan;;
-                }else if (objectData.type == ObjectAttributes.ObjectType.Slime)
-                {
-                    meshRenderer.material.color = Color.green;;
-                }else if (objectData.type == ObjectAttributes.ObjectType.JumpPad)
-                {
-                    meshRenderer.material.color = Color.magenta;;
-                }
                 objectData.mainTextureName = meshRenderer?.material?.mainTexture?.name;
                 objectData.normalTextureName = meshRenderer?.material?.GetTexture("_BumpMap")?.name;
 
                 objects.Add(objectData);
+            }
+        }
+    }
+    
+    void UpdateMaterials(Transform node, List<ObjectData> objects)
+    {
+        if (node.childCount > 0)
+        {
+            foreach (Transform child in node)
+            {
+                UpdateMaterials(child, objects);
+            }
+        }
+        else
+        {
+            MeshFilter meshFilter = node.GetComponent<MeshFilter>();
+            if (meshFilter != null)
+            {
+                GameObject nodeGameObject = node.gameObject;
+                MeshRenderer meshRenderer = node.GetComponent<MeshRenderer>();
+                meshRenderer.material = materialMap[nodeGameObject.GetComponent<ObjectAttributes>().GetTypeEnum()];
+                if (nodeGameObject.GetComponent<ObjectAttributes>().GetTypeEnum() == ObjectAttributes.ObjectType.Slime)
+                {
+                    meshRenderer.material.color = Color.green;;
+                }
             }
         }
     }

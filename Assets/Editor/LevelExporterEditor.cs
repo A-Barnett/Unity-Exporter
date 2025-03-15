@@ -15,5 +15,11 @@ public class LevelExporterEditor : Editor
             script.SaveLevel();
         }
         
+        if (GUILayout.Button("\n\nSet Materials\n\n"))
+        {
+            script.SetMaterials();
+        }
+
+        
     }
 }

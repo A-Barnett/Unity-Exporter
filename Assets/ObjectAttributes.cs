@@ -14,6 +14,7 @@ public class ObjectAttributes : MonoBehaviour
     public enum ObjectType
     {
         Default,
+        Floor,
         JumpPad,
         Slime, 
         Ice,
