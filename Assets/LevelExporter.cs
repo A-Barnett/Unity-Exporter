@@ -74,7 +74,7 @@ public class LevelExporter : MonoBehaviour
             { ObjectAttributes.ObjectType.PointLight, defaultMaterial },
             { ObjectAttributes.ObjectType.RespawnPoint, defaultMaterial },
             { ObjectAttributes.ObjectType.Centre, centreMaterial },
-            { ObjectAttributes.ObjectType.SlimeCaste, slimeCastleMaterial },
+            { ObjectAttributes.ObjectType.SlimeCastle, slimeCastleMaterial },
             { ObjectAttributes.ObjectType.Courtyard, courtyardMaterial }
         };
         List<ObjectData> objects = new List<ObjectData>();

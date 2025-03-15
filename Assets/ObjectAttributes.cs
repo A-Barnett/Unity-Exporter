@@ -22,7 +22,7 @@ public class ObjectAttributes : MonoBehaviour
         RespawnPoint,
         Player,
         Centre,
-        SlimeCaste,
+        SlimeCastle,
         Courtyard
     }
     
