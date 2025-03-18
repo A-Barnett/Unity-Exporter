@@ -21,6 +21,7 @@ public class LevelExporter : MonoBehaviour
         public string meshName;
         public string mainTextureName;
         public string normalTextureName;
+        public float jumpPadStrength;
 
         public ObjectAttributes.ObjectType type;
         public override string ToString()
@@ -106,6 +107,7 @@ public class LevelExporter : MonoBehaviour
                 GameObject nodeGameObject = node.gameObject;
                 ObjectAttributes objectAttributes = nodeGameObject.GetComponent<ObjectAttributes>();
                 objectData.type = objectAttributes.GetTypeEnum();
+                objectData.jumpPadStrength = objectAttributes.jumpPadStrength;
       
                 // Get collider info if available
                 BoxCollider box = node.GetComponent<BoxCollider>();

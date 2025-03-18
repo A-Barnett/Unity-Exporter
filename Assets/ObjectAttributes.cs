@@ -9,8 +9,8 @@ public class ObjectAttributes : MonoBehaviour
 {
 
     [SerializeField] private ObjectType objType;
-    
-    //
+    [SerializeField] public float jumpPadStrength = 0.0f;
+    //jumpPadStrength
     public enum ObjectType
     {
         Default,

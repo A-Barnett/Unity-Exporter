@@ -55,7 +55,7 @@ public class UnpackCube : MonoBehaviour
     {
         if (isUnpacking)
         {
-            elapsedTime += Time.deltaTime;
+         
 
             int count = 0;
             foreach (GameObject obj in cubeSectionsObj)
@@ -89,7 +89,6 @@ public class UnpackCube : MonoBehaviour
 
         if (isPacking)
         {
-            elapsedTime += Time.deltaTime;
 
             int count = 0;
             foreach (GameObject obj in cubeSectionsObj)
@@ -121,5 +120,7 @@ public class UnpackCube : MonoBehaviour
                 elapsedTime = 0;
             }
         }
+        elapsedTime += Time.deltaTime;
     }
+    
 }
