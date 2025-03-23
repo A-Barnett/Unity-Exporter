@@ -23,7 +23,11 @@ public class ObjectAttributes : MonoBehaviour
         Player,
         Centre,
         SlimeCastle,
-        Courtyard
+        Courtyard,
+        AI,
+        JumpRoom,
+        JumpRoomFloor,
+        ZigZag
     }
     
     public ObjectType GetTypeEnum()
